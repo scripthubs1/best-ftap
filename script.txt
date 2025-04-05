@@ -1,1 +1,102 @@
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/scripthubs1/best-ftap/refs/heads/main/orion-for-v1'))()
 
+local Window = OrionLib:MakeWindow({Name = "BFS Hub V1", HidePremium = false, SaveConfig = true, ConfigFolder = "BFSConfig"})
+
+local poisonGrabCoroutine
+local ufoGrabCoroutine
+local paintPlayerParts = getDescendantParts("PaintPlayerPart")
+
+-- Functions
+local GrabEvents = ReplicatedStorage:WaitForChild("GrabEvents")
+local MenuToys = ReplicatedStorage:WaitForChild("MenuToys")
+local CharacterEvents = ReplicatedStorage:WaitForChild("CharacterEvents")
+local SetNetworkOwner = GrabEvents:WaitForChild("SetNetworkOwner")
+local Struggle = CharacterEvents:WaitForChild("Struggle")
+local CreateLine = GrabEvents:WaitForChild("CreateGrabLine")
+local DestroyLine = GrabEvents:WaitForChild("DestroyGrabLine")
+local DestroyToy = MenuToys:WaitForChild("DestroyToy")
+
+local function grabHandler(grabType)
+while true do
+local success, err = pcall(function()
+local child = workspace:FindFirstChild("GrabParts")
+if child and child.Name == "GrabParts" then
+local grabPart = child:FindFirstChild("GrabPart")
+local grabbedPart = grabPart:FindFirstChild("WeldConstraint").Part1
+local head = grabbedPart.Parent:FindFirstChild("Head")
+if head then
+while workspace:FindFirstChild("GrabParts") do
+local partsTable = grabType == "poison" and poisonHurtParts or paintPlayerParts
+for , part in pairs(partsTable) do
+part.Size = Vector3.new(2, 2, 2)
+part.Transparency = 1
+part.Position = head.Position
+end
+wait()
+for , part in pairs(partsTable) do
+part.Position = Vector3.new(0, -200, 0)
+end
+end
+for _, part in pairs(partsTable) do
+part.Position = Vector3.new(0, -200, 0)
+end
+end
+end
+end)
+wait()
+end
+end
+-- Tabs
+local GrabTab = Window:MakeTab({Name = "Grab", Icon = "rbxassetid://18624615643", PremiumOnly = false})
+
+local Section = Tab:AddSection({
+Name = "Grabs"
+})
+
+GrabTab:AddToggle({
+Name = "Poison Grab",
+Default = false,
+Save = true,
+Color = Color3.fromRGB(240, 0, 0),
+Flag = "PoisonGrab",
+Callback = function(enabled)
+if enabled then
+poisonGrabCoroutine = coroutine.create(function() grabHandler("poison") end)
+coroutine.resume(poisonGrabCoroutine)
+else
+if poisonGrabCoroutine then
+coroutine.close(poisonGrabCoroutine)
+poisonGrabCoroutine = nil
+for _, part in pairs(poisonHurtParts) do
+part.Position = Vector3.new(0, -200, 0)
+end
+end
+end
+end
+})
+
+GrabTab:AddToggle({
+    Name = "Radioactive Grab",
+    Default = false,
+    Color = Color3.fromRGB(240, 0, 0),
+    Save = true,
+    Flag = "RadioactiveGrab",
+    Callback = function(enabled)
+        if enabled then
+            ufoGrabCoroutine = coroutine.create(function() grabHandler("radioactive") end)
+            coroutine.resume(ufoGrabCoroutine)
+        else
+            if ufoGrabCoroutine then
+                coroutine.close(ufoGrabCoroutine)
+                ufoGrabCoroutine = nil
+                for _, part in pairs(paintPlayerParts) do
+                    part.Position = Vector3.new(0, -200, 0)
+                end
+            end
+        end
+    end
+})
+
+GrabTab:AddLabel("Script still being made!")
+
+OrionLib:Init()
